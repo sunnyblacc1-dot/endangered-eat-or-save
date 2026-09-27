@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Endangered: Eat or Save? — Version 2</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#101713;color:#f3f4ed;font-family:Arial,sans-serif}.wrap{max-width:1050px;margin:auto;padding:14px}.screen{background:#18221c;border:1px solid #334438;border-radius:18px;padding:20px;box-shadow:0 12px 30px #0005}.hidden{display:none!important}
+h1,h2,h3{margin-top:0}.title{font-size:clamp(2.2rem,7vw,4.5rem);line-height:.92}.small{color:#9eaaa2;font-size:.85rem}.subtitle{color:#bdc8c0;line-height:1.5;max-width:760px}
+button{border:0;border-radius:12px;padding:13px 16px;font-weight:800;cursor:pointer;background:#d9e7d2;color:#101713}button:hover{transform:translateY(-1px)}.primary{background:#c9e36b}.danger{background:#ed8d75}
+.grid{display:grid;gap:14px}.stats{grid-template-columns:repeat(5,1fr);margin:15px 0}.card{background:#111914;border:1px solid #304034;border-radius:14px;padding:14px}.stat-label{font-size:.75rem;color:#91a096;text-transform:uppercase}.stat-value{font-size:1.45rem;font-weight:900;margin-top:5px}
+.quota{border:2px solid #c9e36b;background:#202c19;padding:14px;border-radius:14px;margin-bottom:15px}.quota strong{color:#c9e36b}.bar{height:10px;background:#29352c;border-radius:20px;overflow:hidden;margin-top:7px}.fill{height:100%;width:50%;background:#c9e36b;transition:.25s}
+.main{grid-template-columns:1.25fr .75fr}.actions{grid-template-columns:repeat(2,1fr)}.action{text-align:left;min-height:145px;background:#202b23;color:#f4f4ed;border:1px solid #3b4c40}.action:hover{border-color:#c9e36b}.action b{display:block;font-size:1.05rem;margin-bottom:7px}.action span{display:block;color:#b7c2ba;font-weight:500;line-height:1.35}.cost{display:inline-block;margin-top:9px;color:#c9e36b;font-weight:800}
+.restaurant{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid #2d392f}.restaurant:last-child{border-bottom:0}.tag{color:#aab8ae;font-size:.85rem}.log{height:170px;overflow:auto;background:#0d120f;border-radius:12px;padding:12px;font-size:.9rem;line-height:1.45}.log p{margin:0 0 8px}.good{color:#c9e36b}.bad{color:#ed8d75}.neutral{color:#b9c7bc}.result{font-size:1.02rem;line-height:1.5;background:#101713;border-radius:14px;padding:15px;border:1px solid #334438}
+@media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}.main{grid-template-columns:1fr}}@media(max-width:520px){.actions{grid-template-columns:1fr}.wrap{padding:9px}}
+</style>
+</head>
+<body><div class="wrap">
+
+<section id="start" class="screen">
+<div class="small">ECON 108 • WEEK FOUR GAME</div>
+<h1 class="title">ENDANGERED:<br>EAT OR SAVE?</h1>
+<p class="subtitle">You run <b>Wild Bites</b>, a restaurant famous for a fictional endangered-animal dish. Three restaurants compete for the same customers. Survive 10 rounds without destroying the resource or missing your customer contract.</p>
+<div class="grid" style="grid-template-columns:1fr 1fr;margin:20px 0">
+<div class="card"><h3>Your contract</h3><ul><li>Serve at least <b>5 customers every round.</b></li><li>Miss the quota and your restaurant closes.</li><li>You also lose if the animal population reaches 0 or you run out of money.</li></ul></div>
+<div class="card"><h3>The catch</h3><ul><li>Endangered meat brings customers but reduces the population.</li><li>Scarcity makes the meat more expensive.</li><li>Competitors affect the shared market.</li></ul></div>
+</div>
+<button class="primary" onclick="startGame()">START GAME</button>
+</section>
+
+<section id="game" class="hidden">
+<div class="screen">
+<div style="display:flex;justify-content:space-between;align-items:end;gap:15px;flex-wrap:wrap"><div><div class="small">WILD BITES</div><h2 style="margin-bottom:3px">Keep the restaurant alive.</h2><div class="small">Round <span id="round">1</span> of 10</div></div><button class="danger" onclick="startGame()">Restart</button></div>
+
+<div class="stats">
+<div class="card"><div class="stat-label">Cash</div><div class="stat-value" id="cash">$500</div></div>
+<div class="card"><div class="stat-label">Customers</div><div class="stat-value" id="customers">0</div></div>
+<div class="card"><div class="stat-label">Population</div><div class="stat-value" id="population">100</div></div>
+<div class="card"><div class="stat-label">Meat price</div><div class="stat-value" id="meatPrice">$10</div></div>
+<div class="card"><div class="stat-label">Operating cost</div><div class="stat-value">$12</div></div>
+</div>
+
+<div class="quota"><b>CONTRACT QUOTA:</b> Serve at least <strong>5 customers this round</strong> or the restaurant closes.<div class="bar"><div class="fill" id="quotaFill"></div></div><div class="small" id="quotaText">0 / 5 customers</div></div>
+
+<div class="grid main">
+<div>
+<div class="card"><h3>What will you do?</h3><p class="small">Make ONE business decision per round.</p>
+<div class="grid actions">
+<button class="action" onclick="choose('meat')"><b>🍖 Serve endangered meat</b><span>High demand. Uses 12 animals and costs the current market price.</span><span class="cost" id="meatCost">Cost: $10</span></button>
+<button class="action" onclick="choose('substitute')"><b>🌱 Serve a substitute</b><span>Lower demand, but protects the endangered population.</span><span class="cost">Cost: $6</span></button>
+<button class="action" onclick="choose('conserve')"><b>🌳 Fund conservation</b><span>Sacrifice short-term sales to help rebuild the shared resource.</span><span class="cost">Cost: $35</span></button>
+<button class="action" onclick="choose('save')"><b>💰 Save cash</b><span>No real sales this round. You keep cash but risk missing the quota.</span><span class="cost">Cost: $0</span></button>
+</div></div>
+<div class="card" style="margin-top:14px"><h3>Market news</h3><div id="event" class="result">Choose an action to begin the round.</div></div>
+<div class="card" style="margin-top:14px"><h3>Decision log</h3><div class="log" id="log"></div></div>
+</div>
+
+<aside>
+<div class="card"><h3>The competition</h3>
+<div class="restaurant"><div><b>Wild Bites</b><div class="tag">You • endangered dish</div></div><b id="youCustomers">0</b></div>
+<div class="restaurant"><div><b>Exotic Eats</b><div class="tag">Aggressive resource use</div></div><b id="exoticCustomers">0</b></div>
+<div class="restaurant"><div><b>Forest Feast</b><div class="tag">Substitutes + conservation</div></div><b id="forestCustomers">0</b></div>
+<p class="small">Competitors can steal customers and can also affect the shared population.</p>
+</div>
+<div class="card" style="margin-top:14px"><h3>Resource health</h3><div class="small">Endangered animal population</div><div class="bar"><div class="fill" id="popFill"></div></div><div class="small" id="popText">100 / 100</div></div>
+<div class="card" style="margin-top:14px"><h3>Economics underneath the game</h3><p class="small">Every choice has an opportunity cost. Scarcity changes prices. Competition changes demand. Individual incentives can affect a shared resource.</p></div>
+</aside>
+</div></div></section>
+
+<section id="end" class="hidden screen" style="text-align:center">
+<div class="small">FINAL RESULT</div><h1 id="endTitle">Wild Bites survived!</h1><div class="result" id="endText"></div>
+<div class="grid" style="grid-template-columns:repeat(3,1fr);margin:18px 0"><div class="card"><div class="stat-label">Customers</div><div class="stat-value" id="finalCustomers">0</div></div><div class="card"><div class="stat-label">Cash</div><div class="stat-value" id="finalCash">$0</div></div><div class="card"><div class="stat-label">Population</div><div class="stat-value" id="finalPop">0</div></div></div>
+<button class="primary" onclick="startGame()">PLAY AGAIN</button>
+</section>
+</div>
+
+<script>
+let s;
+function startGame(){
+s={round:1,cash:500,customers:0,population:100,exotic:0,forest:0,roundCustomers:0,over:false};
+document.getElementById('start').classList.add('hidden');document.getElementById('end').classList.add('hidden');document.getElementById('game').classList.remove('hidden');
+document.getElementById('log').innerHTML='';log('You opened Wild Bites with $500 and a 5-customer contract.','neutral');update();
+}
+function price(){return s.population>70?10:s.population>50?14:s.population>30?20:s.population>15?30:40}
+function choose(a){
+if(s.over)return;
+let p=price(),served=0,earned=0,msg='',tone='neutral';
+let pressure=Math.max(-2,Math.min(2,Math.round((s.forest-s.exotic)*.05))),shock=Math.floor(Math.random()*3)-1;
+if(a==='meat'){if(s.cash<p){log('You cannot afford the endangered meat at $'+p+'.','bad');return} s.cash-=p;served=Math.max(5,8+shock+(p<=14?1:0)+pressure);earned=served*7;s.cash+=earned;s.population-=12;msg='You served endangered meat to '+served+' customers, earned $'+earned+', and removed 12 animals.';tone='bad'}
+if(a==='substitute'){s.cash-=6;served=Math.max(5,6+shock+pressure);earned=served*6;s.cash+=earned;msg='You served a substitute to '+served+' customers, earned $'+earned+', and did not reduce the population.';tone='good'}
+if(a==='conserve'){if(s.cash<35){log('You cannot afford conservation this round.','bad');return}s.cash-=35;s.population=Math.min(100,s.population+16);served=Math.max(2,3+shock+(s.population<40?1:0));earned=served*6;s.cash+=earned;msg='You funded conservation, population recovered by 16, and you served '+served+' customers.';tone='good'}
+if(a==='save'){served=Math.max(0,1+shock);earned=served*5;s.cash+=earned;msg='You focused on cash and served '+served+' customers, earning $'+earned+'.';tone='neutral'}
+
+let ex=5+Math.floor(Math.random()*4),fo=4+Math.floor(Math.random()*3),shared=Math.random()<.55?5:3;s.exotic+=ex;s.forest+=fo;s.population-=shared;
+let news=['A food blogger visits the city. Demand rises across the market.','Exotic Eats launches a discount and steals some demand.','Forest Feast runs a sustainability campaign.','A substitute supply disruption hits the market.'][Math.floor(Math.random()*4)];
+if(news.startsWith('Exotic')&&a==='meat')served=Math.max(5,served-1);
+s.cash-=12;s.roundCustomers=served;s.customers+=served;
+log('ROUND '+s.round+': '+msg,tone);log(news+' Competitors served '+ex+' and '+fo+'. The shared population fell '+shared+'.','neutral');
+if(s.population<=0){s.population=0;end(false,'The endangered population collapsed to zero. The shared resource was exhausted.');return}
+if(s.cash<0){end(false,'You ran out of money. The restaurant could not cover its operating costs.');return}
+if(served<5){end(false,'You served only '+served+' customers. Your contract required at least 5 this round.');return}
+if(s.round>=10){end(true,'You completed all 10 rounds without missing the quota, going broke, or exhausting the resource.');return}
+s.round++;update();
+}
+function update(){
+let p=price();document.getElementById('round').textContent=s.round;document.getElementById('cash').textContent='$'+Math.round(s.cash);document.getElementById('customers').textContent=s.customers;document.getElementById('population').textContent=Math.round(s.population);document.getElementById('meatPrice').textContent='$'+p;document.getElementById('meatCost').textContent='Cost: $'+p;
+document.getElementById('quotaFill').style.width=Math.min(100,s.roundCustomers/5*100)+'%';document.getElementById('quotaText').textContent=s.roundCustomers+' / 5 customers this round';
+document.getElementById('popFill').style.width=Math.max(0,Math.min(100,s.population))+'%';document.getElementById('popText').textContent=Math.round(s.population)+' / 100';
+document.getElementById('youCustomers').textContent=s.customers;document.getElementById('exoticCustomers').textContent=s.exotic;document.getElementById('forestCustomers').textContent=s.forest;
+document.getElementById('event').textContent=s.round===1&&s.roundCustomers===0?'The market is open. The easiest way to get customers can make tomorrow more expensive.':'Round '+s.round+': meat costs $'+p+' and the population is '+Math.round(s.population)+'.';
+}
+function log(t,c){let p=document.createElement('p');p.className=c||'neutral';p.textContent=t;document.getElementById('log').prepend(p)}
+function end(won,reason){
+s.over=true;document.getElementById('game').classList.add('hidden');document.getElementById('end').classList.remove('hidden');
+document.getElementById('endTitle').textContent=won?'Wild Bites survived!':'Wild Bites closed.';
+document.getElementById('endText').innerHTML='<b>'+reason+'</b><br><br>The economics lesson is built into the choices: a decision that helps your restaurant now can make a shared resource scarcer, raising future costs and affecting competitors. Competition can strengthen those incentives.';
+document.getElementById('finalCustomers').textContent=s.customers;document.getElementById('finalCash').textContent='$'+Math.round(s.cash);document.getElementById('finalPop').textContent=Math.round(s.population);
+}
+</script>
+</body></html>
